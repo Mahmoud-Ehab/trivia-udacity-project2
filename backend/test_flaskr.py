@@ -20,8 +20,10 @@ class TriviaTestCase(unittest.TestCase):
         self.DB_HOST = os.getenv("DB_HOST", "localhost:5432")
         self.DB_NAME = os.getenv("DB_NAME", "trivia_test")
 
-        self.database_path = "postgresql://{}:{}@{}/{}".format(self.DB_USER, self.DB_PASSWORD,
-                                                                self.DB_HOST, self.DB_NAME)
+        self.database_path = "postgresql://{}:{}@{}/{}".format(
+            self.DB_USER, self.DB_PASSWORD,
+            self.DB_HOST, self.DB_NAME
+            )
 
         # Make db connection
         setup_db(self.app, self.database_path)
@@ -37,10 +39,10 @@ class TriviaTestCase(unittest.TestCase):
         """Executed after reach test"""
         pass
 
-
     """
-    TODO
-    Write at least one test for each test for successful operation and for expected errors.
+    DONE:
+    Write at least one test for each test for successful
+    operation and for expected errors.
     """
     def test_get_categories(self):
         res = self.client().get('/categories')
@@ -48,7 +50,6 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 200)
         self.assertTrue(data['categories'])
-
 
     def test_get_questions(self):
         res = self.client().get('/questions')
@@ -58,7 +59,6 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(len(data['questions']), QUESTIONS_PER_PAGE)
         self.assertEqual(data['total_questions'], Question.query.count())
         self.assertTrue(data['categories'])
-
 
     def test_post_question(self):
         new_question = {
@@ -74,11 +74,15 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['success'])
 
         last_question = Question.query.order_by(Question.id.desc()).first()
-        self.assertSequenceEqual(last_question.question, new_question['question'])
-
+        self.assertSequenceEqual(
+            last_question.question,
+            new_question['question'])
 
     def test_delete_question(self):
-        last_question_id = Question.query.order_by(Question.id.desc()).first().id
+        last_question_id = Question.query.order_by(
+                Question.id.desc()
+            ).first().id
+
         res = self.client().delete('/questions/' + str(last_question_id))
         data = json.loads(res.data)
 
@@ -86,15 +90,16 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['success'])
         self.assertEqual(Question.query.get(last_question_id), None)
 
-
     def test_search(self):
-        res = self.client().post('/questions/search', json={'searchTerm': 'what'})
+        res = self.client().post(
+            '/questions/search',
+            json={'searchTerm': 'what'})
+
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
         self.assertTrue(data['questions'])
         self.assertTrue(data['total_questions'])
-
 
     def test_category_questions(self):
         res = self.client().get('/categories/1/questions')
@@ -104,7 +109,6 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['questions'])
         self.assertTrue(data['total_questions'])
         self.assertTrue(data['current_category'])
-
 
     def test_quizzes(self):
         req_body = {
@@ -117,10 +121,9 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertTrue(data['question'])
 
-
-    #-------------------------------------
+    # -------------------------------------
     # Test Errors handlers
-    #-------------------------------------
+    # -------------------------------------
     def test_notfound(self):
         res = self.client().get('/SomeTestEndpoint')
         data = json.loads(res.data)
@@ -129,7 +132,6 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(not data['success'])
         self.assertTrue(data['error'])
         self.assertTrue(data['message'])
-
 
     def test_unprocessable(self):
         res = self.client().post('/quizzes')
